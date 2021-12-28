@@ -1,0 +1,51 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: server-user
+  labels:
+    name: server-user
+spec:
+  ports:
+    - nodePort: 30001
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+  selector:
+    app: server-user
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-user
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server-user
+  template:
+    metadata:
+      name: server-user
+      labels:
+        app: server-user
+    spec:
+      containers:
+        - name: server-user
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-user-config
+                  key: postgres_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-user-config
+                  key: postgres_password
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-user-config
+                  key: postgres_host
+          image: dariadenhub/service-user
